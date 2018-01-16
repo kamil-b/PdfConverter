@@ -4,32 +4,36 @@ import common.query.utiles.TikaConverter;
 import org.apache.tika.exception.TikaException;
 import org.xml.sax.SAXException;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.BlockingQueue;
 
-public class ConverterThread implements Runnable {
+class ConverterThread implements Runnable {
 
     private TikaConverter converter = new TikaConverter();
-    private boolean readyForNextConvertation = true;
-    private String destination;
+    private BlockingQueue<File> sharedQueue;
 
-    ConverterThread(String destination) {
-        this.destination = destination;
+
+    ConverterThread(BlockingQueue sharedQueue) {
+        this.sharedQueue = sharedQueue;
     }
-
 
     @Override
     public void run() {
         try {
-            converter.parsePdfToTxt("", destination);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (TikaException e) {
-            e.printStackTrace();
-        } catch (SAXException e) {
+            if (isNotEmpty()) {
+                convert(sharedQueue.take(), new File(""));
+            }
+        } catch (InterruptedException | TikaException | SAXException | IOException e) {
             e.printStackTrace();
         }
-
     }
 
+    private void convert(File inputfile, File outputFile) throws TikaException, IOException, SAXException {
+        converter.parsePdfToTxt(inputfile, outputFile);
+    }
 
+    private boolean isNotEmpty() {
+        return !sharedQueue.isEmpty();
+    }
 }

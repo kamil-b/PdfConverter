@@ -16,14 +16,17 @@ import java.io.InputStream;
 
 public class TikaConverter {
 
+    public static void parsePdfToTxt(String inputText, String outputText) throws IOException, TikaException, SAXException {
+        parsePdfToTxt(new File(inputText), new File(outputText));
+    }
 
-    public void parsePdfToTxt(String inputText, String outputFile) throws IOException, TikaException, SAXException {
+    public static void parsePdfToTxt(File inputFile, File outputFile) throws IOException, TikaException, SAXException {
         BodyContentHandler handler = new BodyContentHandler();
         PDFParser pdfparser = new PDFParser();
 
-        pdfparser.parse(new FileInputStream(new File(inputText)), handler, new Metadata(), new ParseContext());
+        pdfparser.parse(new FileInputStream(inputFile), handler, new Metadata(), new ParseContext());
 
-        FileUtils.writeStringToFile(new File(outputFile), handler.toString(), "UTF-8");
+        FileUtils.writeStringToFile(outputFile, handler.toString(), "UTF-8");
     }
 
     public static String parseToPlainText(String in, String out) throws IOException, SAXException, TikaException {
